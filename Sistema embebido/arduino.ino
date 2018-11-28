@@ -1,11 +1,7 @@
 // Incluímos la librería para poder controlar el servo
 #include <Servo.h>
-#include <Wire.h> //include Wire.h library
 #include "RTClib.h" //include Adafruit RTC library
-#include <EEPROM.h> // libreria para la memoria del arduino
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <EEPROM.h> // biblioteca para la memoria del arduino
 
 RTC_DS3231 rtc; //Make a RTC DS3231 object
 
