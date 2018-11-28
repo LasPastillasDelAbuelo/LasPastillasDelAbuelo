@@ -23,9 +23,7 @@ int pinLedPwd = 6;
 int pinLedLuz = 7;
 
 //Boton
-//int pinBoton = 8;
 int pinBoton = A1;
-int pinBoton2 = A3;
 
 //BUZZER
 int pinBuzzer = 13;
