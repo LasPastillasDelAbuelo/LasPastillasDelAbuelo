@@ -8,7 +8,7 @@
 
     <Button
         android:id="@+id/btnVolver"
-        android:layout_width="wrap_content"
+        android:layout_width="209dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="72dp"
         android:layout_marginEnd="8dp"
@@ -23,8 +23,8 @@
     <TextView
         android:id="@+id/infoSensores"
         android:layout_width="317dp"
-        android:layout_height="315dp"
-        android:layout_marginBottom="8dp"
+        android:layout_height="307dp"
+        android:layout_marginBottom="68dp"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
@@ -34,12 +34,14 @@
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/btnVolver"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.509"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/txtLuz"
-        android:layout_width="84dp"
+        android:layout_width="209dp"
         android:layout_height="33dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
@@ -51,4 +53,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnVolver" />
+
 </android.support.constraint.ConstraintLayout>

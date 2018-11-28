@@ -1,6 +1,10 @@
 package unlam.com.lpda;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,6 +17,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.UUID;
+
 public class SensorsActivity extends Activity implements SensorEventListener {
 
     //Seteo precisión del sensor para Shake
@@ -22,6 +31,15 @@ public class SensorsActivity extends Activity implements SensorEventListener {
     private Button btnVolver;
     private SensorManager mSensorManager;
     private TextView light;
+
+    private BluetoothAdapter mBluetoothAdapter;
+    private BluetoothSocket btSocket = null;
+
+    // SPP UUID service  - Funciona en la mayoria de los dispositivos
+    private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+
+    // String para la MAC address del Hc06
+    private static String address = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +56,77 @@ public class SensorsActivity extends Activity implements SensorEventListener {
 
         //Seteo listeners a los botones
         btnVolver.setOnClickListener(botonesListeners);
+
+        //obtengo el adaptador del bluethoot
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    }
+
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        //registro los sensores
+        registrarSensores();
+
+        //Tomo la direccion del HC06 pasada desde la activity anterior
+        Intent intent=getIntent();
+        Bundle extras=intent.getExtras();
+        address= extras.getString("Direccion_Bluethoot");
+
+        //Conecto el HC06 por BT
+        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+
+        //se realiza la conexion del Bluethoot a traves de un socket
+        try
+        {
+            btSocket = createBluetoothSocket(device);
+        }
+        catch (IOException e)
+        {
+            Toast.makeText(getApplicationContext(),"La creacción del Socket fallo", Toast.LENGTH_LONG).show();
+        }
+        //Se establece la conexión con el socket
+        try
+        {
+            btSocket.connect();
+            Toast.makeText(getApplicationContext(),"CONECTADO!", Toast.LENGTH_LONG).show();
+
+        }
+        catch (IOException e)
+        {
+            Log.e("err", e.toString());
+            try
+            {
+                btSocket.close();
+            }
+            catch (IOException e2)
+            {
+                Toast.makeText(getApplicationContext(),"No se pudo conectar con BT", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    //Metodo que crea el socket bluethoot
+    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
+        return  device.createRfcommSocketToServiceRecord(BTMODULEUUID);
+    }
+
+    //Metodo para enviar mensajes vía BT
+    public void write(String input) {
+        OutputStream mmOutStream = null;
+        try
+        {
+            //Creo I/O streams para la conexión
+            mmOutStream = btSocket.getOutputStream();
+        } catch (IOException e) { }
+        byte[] msgBuffer = input.getBytes();           //Convierto el string a bytes
+        try {
+            mmOutStream.write(msgBuffer);                //Escribo bytes al BT vía Outstream
+        } catch (IOException e) {
+            //Si no se pudo escribir, envío un mensaje
+            Toast.makeText(getApplicationContext(),"La conexion fallo", Toast.LENGTH_SHORT).show();
+        }
     }
 
     //Metodo que actua como Listener de los eventos que ocurren en los componentes graficos de la activty
@@ -49,51 +138,50 @@ public class SensorsActivity extends Activity implements SensorEventListener {
             //Se determina que componente genero un evento
             switch (v.getId())
             {
-                //Si se ocurrio un evento en el boton OK
                 case R.id.btnVolver:
-                    //se genera un Intent para poder lanzar la activity principal
-                    intent=new Intent(SensorsActivity.this, MainActivity.class);
-                    //se inicia la activity principal
+                    intent=new Intent(SensorsActivity.this, BTMenuActivity.class);
+                    //Vuelvo a enviar la dirección de BT a la activity anterior
+                    intent.putExtra("Direccion_Bluethoot", address);
                     startActivity(intent);
                     break;
                 default:
                     Toast.makeText(getApplicationContext(),"Error en Listener de botones", Toast.LENGTH_LONG).show();
             }
-
-
         }
     };
 
     @Override
     public void onSensorChanged(SensorEvent event) {
         // Cada sensor puede lanzar un thread que pase por aqui
-        // Para asegurarnos ante los accesos simult�neos sincronizamos esto
+        // Para asegurarnos ante los accesos simultaneos sincronizamos esto
 
         synchronized (this)
         {
-            Log.d("sensor", event.sensor.getName());
-
             switch(event.sensor.getType())
             {
                 case Sensor.TYPE_ACCELEROMETER :
-                    //Toast.makeText(getApplicationContext(),"Acelerometro!"+event.values[0]+" "+event.values[1]+" "+event.values[2], Toast.LENGTH_LONG).show();
                     if ((Math.abs(event.values[0]) > ACC || Math.abs(event.values[1]) > ACC || Math.abs(event.values[2]) > ACC))
                     {
-                        Toast.makeText(getApplicationContext(),"Shakeeeee!", Toast.LENGTH_LONG).show();
-                        Log.i("sensor", "running");
+                        //Si se realiza un shake, le envío 'a' al pastillero
+                        write("a");
                     }
                     break;
                 case Sensor.TYPE_PROXIMITY :
 
-                    // Si detecta 0 lo represento
+                    // Si detecta 0, le envío 'b' al pastillero
                     if( event.values[0] == 0 )
                     {
-                        Toast.makeText(getApplicationContext(),"Proximidad Detectada!", Toast.LENGTH_LONG).show();
+                        write("b");
                     }
                     break;
                 case Sensor.TYPE_LIGHT :
+                    //Muestro el valor de la luz por pantalla, si es menor o igual a 5, envío 'c' al
+                    //pastillero
                     light.setText(String.valueOf(event.values[0]));
-                    //Toast.makeText(getApplicationContext(),"Luz! "+event.values[0], Toast.LENGTH_LONG).show();
+                    if( event.values[0] <= 5 )
+                    {
+                        write("c");
+                    }
                     break;
             }
         }
@@ -105,13 +193,7 @@ public class SensorsActivity extends Activity implements SensorEventListener {
 
     }
 
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-            registrarSensores();
-    }
-
+    //METODOS DEL CICLO DE VIDA
     @Override
     protected void onStop()
     {
@@ -124,10 +206,23 @@ public class SensorsActivity extends Activity implements SensorEventListener {
     {
         pararSensores();
         super.onPause();
+        try
+        {
+            //Cierro el socket BT
+            btSocket.close();
+        } catch (IOException e2) {
+            Toast.makeText(getApplicationContext(),"No se pudo cerrar el Socket", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 
     private void registrarSensores()
     {
+        //Registro los listeners para los sensores
         boolean accelerometerConnected, proximityConnected, lightConnected;
         accelerometerConnected = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),   SensorManager.SENSOR_DELAY_NORMAL);
         proximityConnected = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY),   SensorManager.SENSOR_DELAY_NORMAL);
@@ -147,11 +242,11 @@ public class SensorsActivity extends Activity implements SensorEventListener {
         }
     }
 
+    //Elimino el listener de cada sensor
     private void pararSensores()
     {
         mSensorManager.unregisterListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
         mSensorManager.unregisterListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY));
         mSensorManager.unregisterListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT));
-        Log.i("sensor", "unregister");
     }
 }

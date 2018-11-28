@@ -22,7 +22,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     //Declaro los elementos en pantalla
-    private Button btnPlanificar, btnSensores, btnSincro;
+    private Button btnPlanificar,btnBT;
     private TextView txtPlanificacionAct;
 
     @Override
@@ -33,65 +33,43 @@ public class MainActivity extends AppCompatActivity {
 
         //Linkeo los botones con los elementos de la pantalla correspondientes
         btnPlanificar = (Button) findViewById(R.id.btnPlanificar);
-        btnSensores = (Button) findViewById(R.id.btnSensores);
-        btnSincro = (Button) findViewById(R.id.btnSincro);
+        btnBT = (Button) findViewById(R.id.btnBT);
         txtPlanificacionAct = (TextView) findViewById(R.id.txtPlanificacionAct);
 
         //Seteo listeners a los botones
         btnPlanificar.setOnClickListener(botonesListeners);
-        btnSensores.setOnClickListener(botonesListeners);
-        btnSincro.setOnClickListener(botonesListeners);
+        btnBT.setOnClickListener(botonesListeners);
 
+        //Leo y muestro la planificación actual
         setPlanificacionActual();
-
-        //SI QUISIERAMOS OBTENER DATOS DE OTRA ACTIVITY
-
-        //se crea un objeto Bundle para poder recibir los parametros enviados por la activity Inicio
-        //al momeento de ejecutar stratActivity
-        //Bundle extras=intent.getExtras();
-        //Intent intent=getIntent();
-
-        //String texto= extras.getString("textoOrigen");
-        //txtDestino.setText(texto);
 
     }
 
 
-    //Metodo que actua como Listener de los eventos que ocurren en los componentes graficos de la activty
+    //Metodo que actua como Listener de los eventos que ocurren en los botones
     private View.OnClickListener botonesListeners = new View.OnClickListener()
     {
 
         public void onClick(View v)
         {
             Intent intent;
-
             //Se determina que componente genero un evento
             switch (v.getId())
             {
-                //Si se ocurrio un evento en el boton OK
+                //Si se ocurrio un evento en el boton planificar
                 case R.id.btnPlanificar:
 
-                    //se genera un Intent para poder lanzar la activity principal
+                    //se genera un Intent para poder lanzar la activity de planificacion
                     intent=new Intent(MainActivity.this, PlanificationActivity.class);
 
-                    //se inicia la activity principal
+                    //se inicia la activity
                     startActivity(intent);
                     break;
-                case R.id.btnSensores:
-
-                    //se genera un Intent para poder lanzar la activity principal
-                    intent=new Intent(MainActivity.this, SensorsActivity.class);
-
-                    //se inicia la activity principal
-                    startActivity(intent);
-                    break;
-
-                case R.id.btnSincro:
-
-                    //se genera un Intent para poder lanzar la activity principal
-                    intent=new Intent(MainActivity.this, SincroActivity.class);
-
-                    //se inicia la activity principal
+                case R.id.btnBT:
+                    //se genera un Intent para poder lanzar la activity de lista de dispositivos
+                    //vinculados al BT
+                    intent=new Intent(MainActivity.this, DeviceListActivity.class);
+                    //se inicia la activity
                     startActivity(intent);
                     break;
                 default:
@@ -117,32 +95,33 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Leer el archivo de planificaciones, el mismo está en memoria interna, en el contexto de la app
     private String leerPlanificacion()
     {
 
         String planificacion = "";
 
         try {
+            //Se declara un buffered reader para leer el archivo 'data.txt'
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(new
-                    File(getFilesDir()+ File.separator+"data.txt")));
+                    File(getFilesDir()+ File.separator + "data.txt")));
                 String receiveString;
                 ArrayList<String> lineas = new ArrayList<String> ();
-                //StringBuilder stringBuilder = new StringBuilder("");
 
                 while ( (receiveString = bufferedReader.readLine()) != null ) {
                     lineas.add(receiveString);
-                    //stringBuilder.append(receiveString+"\n");
                 }
 
                 bufferedReader.close();
+                //el formato de la planificación guardada es tolva;dia;horas;minutos,
+                //hay que parsearla para mostrarla
                 planificacion = parsearTxtPlanificacion(lineas);
-                //planificacion = stringBuilder.toString();
         }
         catch (FileNotFoundException e) {
-            Log.e("login activity", "File not found: " + e.toString());
+            Log.e("Main activity", "File not found: " + e.toString());
             return "";
         } catch (IOException e) {
-            Log.e("login activity", "Can not read file: " + e.toString());
+            Log.e("Main activity", "Can not read file: " + e.toString());
             return "";
         }
 
@@ -153,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
     {
         String result = "";
         for (String linea: lineas) {
+            //Separo las lineas por ;
             String[] parsedLine = linea.split(";");
             result += "Tolva " + parsedLine[0] + " - " + getDay(parsedLine[1]) + " - " + parsedLine[2] + ":" + parsedLine[3]+"\n";
         }

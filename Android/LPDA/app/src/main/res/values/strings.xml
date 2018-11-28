@@ -9,12 +9,13 @@
     <string name="bienvenido">Bienvenido al Sistema de Gestión del Pastillero electrónico</string>
     <string name="planif_act_title">Su planificación Actual es: </string>
     <string name="btn_guardar_planif">GUARDAR PLANIFICACIÓN</string>
+    <string name="btn_bt">BLUETOOTH</string>
     <string name="txt_sensores">
         Bienvenido a la pantalla de administración del pastillero por medio de sensores.\n
         Siga las siguientes instrucciones:\n
-        - Para obtener una pastilla, agite el teléfono.\n
-        - Para prender un Led, acerque su mano al teléfono.\n
-        - Para hacer otra cosa, usamos otro sensor.\n
+        - Para girar la tolva 1, agite el teléfono.\n
+        - Para girar la tolva 2, acerque su mano al teléfono.\n
+        - Para hacer sonar la alarma, use el sensor de luz.\n
 
     </string>
 
@@ -31,4 +32,10 @@
     <string name="domingo">Domingo </string>
     <string name="bt_connected">Conectado con placa por BT: No </string>
     <string name="sincro">SINCRONIZAR </string>
+    <string name="btnActivar">ACTIVAR </string>
+    <string name="btnEmparejar">EMPAREJAR </string>
+    <string name="btnBuscar">BUSCAR </string>
+    <string name="text_pair">Emparejar</string>
+    <string name="text_list_devices">Lista de dispositivos</string>
+    <string name="txtAction">¿Qué acción desea realizar?</string>
 </resources>

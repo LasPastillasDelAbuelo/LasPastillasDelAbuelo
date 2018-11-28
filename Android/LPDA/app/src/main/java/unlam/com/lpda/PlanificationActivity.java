@@ -22,8 +22,9 @@ public class PlanificationActivity extends Activity {
     private String[] horas = new String[]{"", "00", "01", "02", "03",
             "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14",
             "15", "16", "17", "18", "19", "20", "21", "22", "23",};
-    private String[] minutos = new String[]{"", "00", "15", "30", "45"};
+    private String[] minutos = new String[]{"", "00", "05", "10", "15", "20","25", "30", "35", "40", "45", "50", "55"};
 
+    //Declaro los elementos gráficos
     private Button btnVolver, btnGuardar;
     private Spinner tolva, t1LunHs, t1LunMin, t1MarHs, t1MarMin, t1MieHs, t1MieMin, t1JueHs, t1JueMin, t1VieHs, t1VieMin, t1SabHs, t1SabMin,t1DomHs, t1DomMin,
             t2LunHs, t2LunMin, t2MarHs, t2MarMin, t2MieHs, t2MieMin, t2JueHs, t2JueMin, t2VieHs, t2VieMin, t2SabHs, t2SabMin, t2DomHs, t2DomMin;
@@ -31,34 +32,33 @@ public class PlanificationActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Asocio la el controlador con la vista
         setContentView(R.layout.activity_add_planification);
 
-        //Botones
+        //Asocio los botones con los botones gráficos
         btnVolver = findViewById(R.id.btnVolver);
         btnGuardar = findViewById(R.id.btnGuardarPlanificacion);
 
+        //Seteo los listeners para los botones
         btnGuardar.setOnClickListener(botonesListeners);
         btnVolver.setOnClickListener(botonesListeners);
 
-        //Spinners
+        //Indico que si se selecciona una tolva, se ejecute el metodo showHideSpinners()
         tolva = findViewById(R.id.spinTolva);
         tolva.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                 showHideSpiners();
-                /*Toast.makeText(parent.getContext(),
-                        "On Item Select : \n" + parent.getItemAtPosition(pos).toString(),
-                        Toast.LENGTH_LONG).show();*/
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
 
             }
         });
+        //Seteo los spinners de tolvas, horas y minutos
         setSpinners();
 
-        //Lo hago en onCreate pq aunque el usuario no pueda interactuar, no lo tiene que ver
+        //Lo hago en onCreate porque aunque el usuario no pueda interactuar, no lo tiene que ver
         showHideSpiners();
     }
 
@@ -72,20 +72,18 @@ public class PlanificationActivity extends Activity {
             //Se determina que componente genero un evento
             switch (v.getId())
             {
-                //Si se ocurrio un evento en el boton OK
+                //Si se ocurrio un evento en el boton Volver
                 case R.id.btnVolver:
-                    //se genera un Intent para poder lanzar la activity principal
                     intent=new Intent(PlanificationActivity.this, MainActivity.class);
-                    //se inicia la activity principal
                     startActivity(intent);
                     break;
-
+                //Si se ocurrio un evento en el boton Guardar Planificacion
                 case R.id.btnGuardarPlanificacion:
+                    //Se guarda la planificacion
                     guardarPlanificacion();
+                    //Se mustra un mensaje de planificacion guardada
                     Toast.makeText(getApplicationContext(),"Planificacion guardada", Toast.LENGTH_LONG).show();
-                    //se genera un Intent para poder lanzar la activity principal
                     intent=new Intent(PlanificationActivity.this, MainActivity.class);
-                    //se inicia la activity principal
                     startActivity(intent);
                     break;
                 default:
@@ -173,6 +171,7 @@ public class PlanificationActivity extends Activity {
         t2DomMin.setAdapter(minutosAdapter);
     }
 
+    //Muestro u oculto dropdown segun qué tolva haya seleccionado
     private void showHideSpiners()
     {
         if(tolva.getSelectedItem() == "Tolva 1")
@@ -281,7 +280,7 @@ public class PlanificationActivity extends Activity {
         //Tolva 2
         if(t2LunHs.getSelectedItem() != "" && t2LunMin.getSelectedItem() != "")
         {
-            data += "2;1;"+t2LunHs.getSelectedItem()+";"+t2LunHs.getSelectedItem()+"\n";
+            data += "2;1;"+t2LunHs.getSelectedItem()+";"+t2LunMin.getSelectedItem()+"\n";
         }
         if(t2MarHs.getSelectedItem() != "" && t2MarMin.getSelectedItem() != "")
         {
@@ -308,10 +307,12 @@ public class PlanificationActivity extends Activity {
             data += "2;7;"+t2DomHs.getSelectedItem()+";"+t2DomMin.getSelectedItem()+"\n";
         }
 
+        //Guardo el archivo
         if(!data.equals(""))
         {
-            //WriteFile
-            //Android apps are isolated one to another, so your app has a dedicated folder in internal storage to read/write into it.
+            //Las aplicaciones Android son independientes unas de otras y tienen una carpeta dedicada
+            // en la memoria interna para poder leer y escribir en ella
+
             try {
                 BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(new
                         File(getFilesDir()+File.separator+"data.txt")));
